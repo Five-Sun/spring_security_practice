@@ -49,9 +49,6 @@
 * 단방향
   * 해시
 
-### DB 연결 시 동작 흐름
-![img.png](img/img.png)
-
 ### 데이터 베이스 변수 설정(application.properties)
 * spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
 * spring.datasource.url=jdbc:mysql://아이피:3306/데이터베이스?useSSL=false&useUnicode=true&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
@@ -187,3 +184,60 @@ public RoleHierarchy roleHierarchy() {
   return hierarchy;
 }
 ```
+
+### JWT 필수 의존성
+JWT 토큰을 생성하고 관리하기 위해 JWT 의존성을 필수적으로 설정해야 합니다.
+* implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
+* implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
+* implementation 'io.jsonwebtoken:jjwt-jackson:0.12.3'
+
+### API 서버와 요청 클라이언트
+API 서버는 웹서버와 달리 서버측으로 요청을 보낼 수 있는 페이지가 존재하지 않고 엔드 포인트만 존재하기 때문에 요청을 보낼 API 클라이언트가 필요
+
+### 스프링 시큐리티 필터 동작
+스프링 시큐리티는 클라이언트의 요청이 여러개의 필터를 거쳐 DispatcherServlet(Controller)으로 향하는 중간 필터에서 요청을 가로챈 후 검증(인증/인가)을 진행
+
+![img.png](img.png)
+
+- Delegating Filter Proxy
+![img.png](img2.png)
+
+### Form 로그인 방식에서 UsernamePasswordAuthenticationFilter
+Form 로그인 방식에서는 클라이언트단이 username과 password를 전송한 뒤 Security 필터를 통과하는데 UsernamePasswordAuthentication 필터에서 회원 검증을 진행
+
+현재는 API방식은 FormLogin 방식을 사용하지 않기 때문에 해당 필터를 커스텀하여 등록해야 함
+
+### JWT 발급과 검증
+- 로그인시 → 성공 → JWT 발급
+- 접근시 → JWT 검증
+
+### JWT
+JWT는 Header.Payload.Signature 구조로 이루어져 있다. 각 요소는 다음 기능을 수행
+* Header
+  * JWT임을 명시
+  * 사용된 암호화 알고리즘
+* Payload
+  * 정보
+* Signature
+  * 암호화알고리즘((BASE64(Header))+(BASE64(Payload)) + 암호화키)
+
+JWT의 특징은 내부 정보를 단순 BASE64 방식으로 인코딩하기 때문에 외부에서 쉽게 디코딩 할 수 있다.
+
+외부에서 열람해도 되는 정보를 담아야하며, 토큰 자체의 발급처를 확인하기 위해서 사용한다.
+
+### 암호화 키 저장
+암호화 키는 하드코딩 방식으로 구현 내부에 탑재하는 것을 지양하기 때문에 변수 설정 파일에 저장
+
+### JWTUtil
+* 토큰 Payload에 저장될 정보
+  * username
+  * role
+  * 생성일
+  * 만료일
+* JWTUtil 구현 메소드
+  * JWTUtil 생성자
+  * username 확인 메소드
+  * role 확인 메소드
+  * 만료일 확인 메소드
+
+
